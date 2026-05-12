@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import StudentList from './pages/Students/StudentList';
 import GradeEntry from './pages/Grades/GradeEntry';
 import GradeHistory from './pages/Grades/GradeHistory';
+import StudentPortal from './pages/StudentPortal';
 import { ToastProvider } from './context/ToastContext';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
                 <GradeHistory />
               </div>
             } />
+            <Route path="student-portal" element={<StudentPortal />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

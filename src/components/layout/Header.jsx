@@ -10,6 +10,7 @@ const Header = ({ setIsOpen }) => {
       case '/': return 'Dashboard';
       case '/students': return 'Gestión de Estudiantes';
       case '/grades': return 'Calificaciones';
+      case '/student-portal': return 'Portal del Estudiante';
       default: return '';
     }
   };

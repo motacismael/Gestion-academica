@@ -1,14 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, GraduationCap, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, GraduationCap, LogOut, UserCircle } from 'lucide-react';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const navItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Estudiantes', path: '/students', icon: Users },
     { name: 'Calificaciones', path: '/grades', icon: GraduationCap },
+    { name: 'Portal Estudiante', path: '/student-portal', icon: UserCircle },
   ];
-
   return (
     <>
       {/* Mobile Overlay */}
