@@ -1,35 +1,46 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardLayout from './components/layout/DashboardLayout';
-import Dashboard from './pages/Dashboard';
-import StudentList from './pages/Students/StudentList';
-import GradeEntry from './pages/Grades/GradeEntry';
-import GradeHistory from './pages/Grades/GradeHistory';
-import StudentPortal from './pages/StudentPortal';
-import { ToastProvider } from './context/ToastContext';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import SuperadminDashboard from './pages/dashboards/Superadmin';
+import ProfesorDashboard from './pages/dashboards/Profesor';
+import EstudianteDashboard from './pages/dashboards/Estudiante';
 
-function App() {
+const ProtectedRoute = ({ children, allowedRole }) => {
+  const { user } = useAuth();
+  
+  if (!user) return <Navigate to="/login" />;
+  if (user.rol !== allowedRole) return <Navigate to={`/${user.rol}`} />;
+  
+  return children;
+};
+
+export default function App() {
   return (
-    <Router>
-      <ToastProvider>
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-          <Route path="/" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="students" element={<StudentList />} />
-            <Route path="grades" element={
-              <div className="space-y-8">
-                <GradeEntry />
-                <hr className="border-slate-200" />
-                <GradeHistory />
-              </div>
-            } />
-            <Route path="student-portal" element={<StudentPortal />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+          
+          <Route path="/superadmin" element={
+            <ProtectedRoute allowedRole="superadmin">
+              <SuperadminDashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profesor" element={
+            <ProtectedRoute allowedRole="profesor">
+              <ProfesorDashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/estudiante" element={
+            <ProtectedRoute allowedRole="estudiante">
+              <EstudianteDashboard />
+            </ProtectedRoute>
+          } />
         </Routes>
-      </ToastProvider>
-    </Router>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
-export default App;
