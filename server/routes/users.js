@@ -34,12 +34,14 @@ router.post('/', verifyTokenAndRole(['superadmin', 'profesor']), async (req, res
 
     if (authError) return res.status(400).json({ error: authError.message });
 
+    const finalMatricula = (roleName === 'estudiante' && matricula) ? matricula : null;
+
     const { data: userData, error: dbError } = await supabaseAdmin.from('usuarios').insert([{
       id: authData.user.id,
       nombre,
       apellido,
       email: emailToUse,
-      matricula,
+      matricula: finalMatricula,
       rol_id: roleData.id
     }]).select('*, roles(nombre)').single();
 

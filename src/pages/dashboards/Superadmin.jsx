@@ -43,11 +43,13 @@ export default function SuperadminDashboard() {
   const stats = {
     profesores: users.filter(u => u.roles?.nombre === 'profesor').length,
     estudiantes: users.filter(u => u.roles?.nombre === 'estudiante').length,
+    superadmins: users.filter(u => u.roles?.nombre === 'superadmin').length,
     materias: materias.length
   };
 
   const profesores = users.filter(u => u.roles?.nombre === 'profesor');
   const estudiantes = users.filter(u => u.roles?.nombre === 'estudiante');
+  const superadmins = users.filter(u => u.roles?.nombre === 'superadmin');
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-200 font-sans">
@@ -124,17 +126,26 @@ export default function SuperadminDashboard() {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-bold text-white">Gestión de Usuarios</h2>
-              <div className="flex gap-2">
-                <button onClick={() => { setSelected({ roleName: 'profesor' }); setModal('createUser'); }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg">
-                  <UserPlus className="w-4 h-4" /> Nuevo Profesor
-                </button>
-                <button onClick={() => { setSelected({ roleName: 'estudiante' }); setModal('createUser'); }}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg">
-                  <UserPlus className="w-4 h-4" /> Nuevo Estudiante
-                </button>
-              </div>
+              <button onClick={() => { setSelected({ roleName: 'estudiante' }); setModal('createUser'); }}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg">
+                <UserPlus className="w-4 h-4" /> Crear Usuario
+              </button>
             </div>
+
+            {/* Superadmins */}
+            <Section title="Superadmins" count={superadmins.length} color="text-indigo-400">
+              <Table
+                headers={['Nombre','Email','Acciones']}
+                rows={superadmins.map(u => [
+                  `${u.nombre} ${u.apellido}`,
+                  u.email,
+                  <RowActions key={u.id}
+                    onEdit={() => { setSelected(u); setModal('editUser'); }}
+                    onDelete={() => handleDeleteUser(u.id)}
+                  />
+                ])}
+              />
+            </Section>
 
             {/* Profesores */}
             <Section title="Profesores" count={profesores.length} color="text-blue-400">
@@ -197,14 +208,13 @@ export default function SuperadminDashboard() {
       {/* MODALS */}
       {modal === 'createUser' && (
         <UserFormModal
-          title={selected?.roleName === 'profesor' ? 'Crear Profesor' : 'Crear Estudiante'}
+          title="Crear Usuario"
           roleName={selected?.roleName}
-          profesores={profesores}
           onClose={closeModal}
           onSave={async (data) => {
             setLoading(true);
             try {
-              const newUser = await api.createUser({ ...data, roleName: selected?.roleName });
+              const newUser = await api.createUser(data);
               setUsers(prev => [...prev, newUser]);
               showToast('Usuario creado exitosamente');
               closeModal();
@@ -340,13 +350,22 @@ function ModalWrapper({ title, onClose, children }) {
 }
 
 function UserFormModal({ title, roleName, onClose, onSave, loading }) {
-  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', matricula: '', password: '' });
+  const [form, setForm] = useState({ nombre: '', apellido: '', email: '', matricula: '', password: '', roleName: roleName || 'estudiante' });
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-  const isEst = roleName === 'estudiante';
+  const isEst = form.roleName === 'estudiante';
 
   return (
     <ModalWrapper title={title} onClose={onClose}>
       <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-1.5">Rol</label>
+          <select value={form.roleName} onChange={e => set('roleName', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="estudiante">Estudiante</option>
+            <option value="profesor">Profesor</option>
+            <option value="superadmin">Superadmin</option>
+          </select>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nombre" value={form.nombre} onChange={v => set('nombre', v)} />
           <Field label="Apellido" value={form.apellido} onChange={v => set('apellido', v)} />
